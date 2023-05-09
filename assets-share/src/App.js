@@ -5,7 +5,8 @@ import { NoWalletDetected } from './Components/NoWalletDetected';
 import { useState } from 'react';
 // We'll use ethers to interact with the Ethereum network and our contract
 import { ethers } from "ethers";
-import ListAsset from './Components/ListAsset';
+import CreateAssets from './Components/CreateAssets';
+import AssetsList from './Components/AssetsList';
 
 // We import the contract's artifacts and address here, as we are going to be
 // using them with ethers
@@ -47,11 +48,12 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>Assets Share Purchase</h1>
+        <h1>Assets Share Purchase (Sepolia Network)</h1>
         {selectedAddress ? (
           <>
           <p>Wallet connected: {selectedAddress}</p>
-          <ListAsset/>
+          <CreateAssets/>
+          <AssetsList/>
           </>
         ) : (
           <button className="connect-wallet-button" onClick={connectWallet}>
