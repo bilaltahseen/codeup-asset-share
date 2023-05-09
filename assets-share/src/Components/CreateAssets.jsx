@@ -7,7 +7,7 @@ import { ethers } from 'ethers';
 function CreateAssets() {
     const [assetName, setAssetName] = useState('');
     const [assetPrice, setAssetPrice] = useState('');
-    const [isLoading,setLoading] = useState(false)
+    const [isLoading, setLoading] = useState(false)
 
     const deployContract = async (price) => {
         try {
@@ -53,17 +53,25 @@ function CreateAssets() {
             // Reset inputs
             const address = await deployContract(assetPrice);
             console.log("🚩 ~ file: CreateAssets.jsx:44 ~ handleSubmit ~ address:", address)
-            localStorage.setItem(address, JSON.stringify({
-                "assetName": assetName,
-                "assetPrice": assetPrice
-
-            }))
+            let currentAssets = localStorage.getItem("assets")
+            if (!currentAssets) {
+                currentAssets = []
+            } else {
+                currentAssets = JSON.parse(currentAssets)
+            }
+            const newAsset = {
+                address,
+                assetName,
+                assetPrice,
+            }
+            currentAssets.push(newAsset)
+            localStorage.setItem("assets", JSON.stringify(currentAssets))
             setAssetName('');
             setAssetPrice('');
         } catch (error) {
             console.log(error)
         }
-        finally{
+        finally {
             setLoading(false)
         }
     };
@@ -92,7 +100,7 @@ function CreateAssets() {
                         onChange={e => setAssetPrice(e.target.value)}
                     />
                 </div>
-                <button disabled={isLoading} type="submit" className="btn btn-primary">{isLoading ? "Please Wait.":"Submit"}</button>
+                <button disabled={isLoading} type="submit" className="btn btn-primary">{isLoading ? "Please Wait." : "Submit"}</button>
             </form>
         </div>
     );
