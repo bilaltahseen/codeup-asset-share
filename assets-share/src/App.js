@@ -4,7 +4,8 @@ import { Button } from 'bootstrap';
 import { NoWalletDetected } from './Components/NoWalletDetected';
 import { useState } from 'react';
 // We'll use ethers to interact with the Ethereum network and our contract
-import {ethers} from "ethers";
+import { ethers } from "ethers";
+import ListAsset from './Components/ListAsset';
 
 // We import the contract's artifacts and address here, as we are going to be
 // using them with ethers
@@ -48,9 +49,14 @@ function App() {
       <header className="App-header">
         <h1>Assets Share Purchase</h1>
         {selectedAddress ? (
+          <>
           <p>Wallet connected: {selectedAddress}</p>
+          <ListAsset/>
+          </>
         ) : (
-          <button onClick={connectWallet}>Connect Wallet</button>
+          <button className="connect-wallet-button" onClick={connectWallet}>
+            Connect Wallet
+          </button>
         )}
 
       </header>
