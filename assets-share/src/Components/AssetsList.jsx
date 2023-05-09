@@ -5,23 +5,29 @@ import { ethers } from 'ethers';
 
 function AssetsList() {
     const [showModal, setShowModal] = useState(false);
-    const [price, setPrice] = useState('');
+    const [shares, setShares] = useState(0);
     const [assets, setAssetsList] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [assetsShare, setAssetsShare] = useState(0);
     const [isButtonLoading,setButtonLoading] = useState(false);
+    const [currentContract,setContract] = useState({})
 
-    const handlePurchase = async (contractAddress) => {
+    const handlePurchase = async (asset) => {
+        setContract({
+            address:asset.address,
+            assetPrice: asset.assetPrice
+        })
         setShowModal(true);
-        await _getAssetsShare(contractAddress)
+        await _getAssetsShare(asset.address)
     };
 
-    const handleSubmit = async () => {
-        // Handle form submission with the price value
-        // Reset price and close modal
+    const handleSubmit = async (e) => {
+        // Handle form submission with the Shares value
+        // Reset Shares and close modal
 
-
+        e.preventDefault()
         try {
+            setButtonLoading(true)
             if (window.ethereum) {
                 await window.ethereum.request({ method: 'eth_requestAccounts' });
             } else {
@@ -34,16 +40,27 @@ function AssetsList() {
             const signer = provider.getSigner();
 
             // Create contract instance
-            const contract = new ethers.Contract(contractAddress, AssetContractArtifact.abi, provider);
+            const contract = new ethers.Contract(currentContract.address, AssetContractArtifact.abi, signer);
+            const amountToSend = ethers.utils.parseEther((parseInt(currentContract.assetPrice) * shares).toString())
+            console.log("🚩 ~ file: AssetsList.jsx:45 ~ handleSubmit ~ amountToSend:", ethers.utils.formatEther(amountToSend))
+            const transaction = {
+                to: currentContract.address,
+                value: amountToSend,
+                data: contract.interface.encodeFunctionData("buyShares", [shares.toString()]),
+              };
 
-            // Call the contract function
-            const result = await contract.totalShare()
-            const readableResult = ethers.utils.formatEther(result)
-            setAssetsShare(parseInt(readableResult))
+            // estimate gas
+            const gasEstimate = await provider.estimateGas(transaction);
+
+            transaction.gasLimit = gasEstimate.add(ethers.BigNumber.from('10000'));
+
+            const sentTransaction = await provider.sendTransaction(transaction);
+            console.log("🚩 ~ file: AssetsList.jsx:57 ~ handleSubmit ~ sentTransaction:", sentTransaction)
         } catch (error) {
             console.error('Error calling contract function:', error);
         } finally {
-            setPrice('');
+            setButtonLoading(false);
+            setShares(0);
             setShowModal(false);
         }
 
@@ -102,7 +119,7 @@ function AssetsList() {
                             <Card.Body>
                                 <Card.Title className='text-dark'>{a.assetName}</Card.Title>
                                 <Card.Text className='text-dark'>{a.assetPrice} <span className='fs-5'>SepoliaETH</span></Card.Text>
-                                <Button onClick={() => { handlePurchase(a.address) }}>Purchase</Button>
+                                <Button onClick={() => { handlePurchase(a) }}>Purchase</Button>
                             </Card.Body>
                         </Card>
                     </div>
@@ -112,16 +129,16 @@ function AssetsList() {
 
             <Modal show={showModal} onHide={() => setShowModal(false)}>
                 <Modal.Header closeButton>
-                    <Modal.Title>Enter Price</Modal.Title>
+                    <Modal.Title>Enter Amount Of Shares To Buy</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <Form>
-                        <Form.Group controlId="price">
-                            <Form.Label>Price:</Form.Label>
+                        <Form.Group controlId="shares">
+                            <Form.Label>Shares:</Form.Label>
                             <Form.Control
-                                type="text"
-                                value={price}
-                                onChange={(e) => setPrice(e.target.value)}
+                                type="number"
+                                value={shares}
+                                onChange={(e) => setShares(e.target.value)}
                             />
                         </Form.Group>
                         <Form.Text>
