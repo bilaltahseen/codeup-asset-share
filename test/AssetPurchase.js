@@ -27,7 +27,7 @@ describe("AssetPurchase", function () {
 
   async function deployAsset() {
     const ASSET_PRICE = 10
-    // Contracts are deployed using the first signer/account by default
+    // Contracts are deployed using the first signer/account by default.
     const [owner, otherAccount] = await ethers.getSigners();
 
     const Asset = await ethers.getContractFactory("Asset");
