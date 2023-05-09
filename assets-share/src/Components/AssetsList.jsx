@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Button, Card, Form, Modal } from 'react-bootstrap';
 import AssetContractArtifact from '../artifacts/contracts/AssetPurchase.sol/Asset.json';
 import { ethers } from 'ethers';
-
+import {toast} from 'react-toastify'
 function AssetsList() {
     const [showModal, setShowModal] = useState(false);
     const [shares, setShares] = useState(0);
@@ -42,7 +42,6 @@ function AssetsList() {
             // Create contract instance
             const contract = new ethers.Contract(currentContract.address, AssetContractArtifact.abi, signer);
             const amountToSend = ethers.utils.parseEther((parseInt(currentContract.assetPrice) * shares).toString())
-            console.log("🚩 ~ file: AssetsList.jsx:45 ~ handleSubmit ~ amountToSend:", ethers.utils.formatEther(amountToSend))
             const transaction = {
                 to: currentContract.address,
                 value: amountToSend,
@@ -57,6 +56,7 @@ function AssetsList() {
             const sentTransaction = await provider.sendTransaction(transaction);
             console.log("🚩 ~ file: AssetsList.jsx:57 ~ handleSubmit ~ sentTransaction:", sentTransaction)
         } catch (error) {
+            toast.error(error.message)
             console.error('Error calling contract function:', error);
         } finally {
             setButtonLoading(false);
@@ -90,6 +90,7 @@ function AssetsList() {
             const readableResult = ethers.utils.formatEther(result)
             setAssetsShare(parseInt(readableResult))
         } catch (error) {
+            toast.error(error.message)
             console.error('Error calling contract function:', error);
         }
     }

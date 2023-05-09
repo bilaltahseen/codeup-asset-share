@@ -3,6 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import AssetContractArtifact from '../artifacts/contracts/AssetPurchase.sol/Asset.json';
 import constants from '../constants';
 import { ethers } from 'ethers';
+import { toast } from 'react-toastify';
 
 function CreateAssets() {
     const [assetName, setAssetName] = useState('');
@@ -34,11 +35,10 @@ function CreateAssets() {
 
             // Wait for the contract to be mined and get the contract address
             await contract.deployed();
-
-
             console.log('Contract deployed at address:', contract.address);
             return contract.address
         } catch (error) {
+            toast.error(error.message)
             console.error('Error deploying contract:', error);
         }
     };
@@ -52,7 +52,9 @@ function CreateAssets() {
             console.log('Asset Price:', assetPrice);
             // Reset inputs
             const address = await deployContract(assetPrice);
-            console.log("🚩 ~ file: CreateAssets.jsx:44 ~ handleSubmit ~ address:", address)
+            if(!address){
+                throw new Error("Something went wrong!")
+            }
             let currentAssets = localStorage.getItem("assets")
             if (!currentAssets) {
                 currentAssets = []
@@ -69,6 +71,7 @@ function CreateAssets() {
             setAssetName('');
             setAssetPrice('');
         } catch (error) {
+            toast.error(error.message)
             console.log(error)
         }
         finally {
